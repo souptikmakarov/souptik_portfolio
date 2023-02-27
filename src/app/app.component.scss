@@ -1,0 +1,21 @@
+.main{
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    max-height: 100vh;
+}
+
+.masthead{
+    flex: 0 0 auto;
+}
+
+.example-container{
+
+    overflow-y: scroll;
+}
+
+.content-main{
+    padding: 24px;
+    height: 100%;
+    flex: 1 1 auto;
+}

@@ -7,4 +7,10 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'souptik_portfolio';
+  events: string[] = [];
+  opened: boolean = false;
+
+  // constructor()}{
+
+  // }
 }
