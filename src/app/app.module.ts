@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomepageComponent } from './homepage/homepage.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialExampleModule } from 'src/material.module';
+import { MaterialExampleModule } from './material.module';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { QlearnerBasicComponent } from './qlearner-basic/qlearner-basic.component';
