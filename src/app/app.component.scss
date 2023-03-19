@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     overflow-y: hidden;
-    max-height: 100vh;
+    height: 100vh;
 }
 
 .masthead{
@@ -14,12 +14,12 @@ mat-sidenav{
 }
 
 .example-container{
-
-    overflow-y: scroll;
+    height: 100%;
+    overflow-y: hidden;
 }
 
 .content-main{
     padding: 24px;
-    height: 100%;
+    // height: 100%;
     flex: 1 1 auto;
 }
