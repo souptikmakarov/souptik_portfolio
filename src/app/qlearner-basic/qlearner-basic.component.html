@@ -43,7 +43,7 @@
   </li>
   <li>
     Planning: In planning, the agent uses the model to generate simulated
-    experience and updates its Q-values based on the simulated experience. The
+    experience and updates its Q-values based on the simulated experience (dynamic hallucinations). The
     agent can then use the updated Q-values to make better decisions in the
     actual environment.
   </li>
@@ -70,4 +70,25 @@ position is interpreted as follows:
 
 <p>A sample world looks like this</p>
 
-<img src="assets/qlearner_world_format.png">
+<img src="assets/qlearner_world_format_{{themeService.theme}}.png">
+
+<p style="margin-top: 50px">Below are the results of different training setups</p>
+
+<div class="run-result-charts">
+  <div class="chart-image-container">
+    <img class="chart-image" src="assets/dyna100_result_plot_{{themeService.theme}}.png">
+    <p class="chart-description">Agents run <span style="color: rgb(199, 23, 23)">without simulated experience</span> outperform ones run <b style="color: rgb(0, 128, 0)">with simulated experience</b> by an average of 2 steps.</p>
+  </div>
+  <div class="chart-image-container">
+    <img class="chart-image" src="assets/dyna200_result_plot_{{themeService.theme}}.png">
+    <p class="chart-description">Agents run <b style="color: rgb(0, 128, 0)">with simulated experience</b> outperform ones run <span style="color: rgb(199, 23, 23)">without simulated experience</span> by an average of 2.4 steps.</p>
+  </div>
+  <div class="chart-image-container">
+    <img class="chart-image" src="assets/dyna300_result_plot_{{themeService.theme}}.png">
+    <p class="chart-description">Agents run <b style="color: rgb(0, 128, 0)">with simulated experience</b> outperform ones run <span style="color: rgb(199, 23, 23)">without simulated experience</span> by an average of 0.2 steps.</p>
+  </div>
+</div>
+
+<p style="margin-top: 40px;">The balance between the number of runs of simulated experience and the learning rate of the model 
+needs to be determined by tuning the parameters and experimentaion.</p>
+
