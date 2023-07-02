@@ -1,25 +1,213 @@
-.main{
+.main {
     display: flex;
     flex-direction: column;
     overflow-y: hidden;
     height: 100vh;
 }
 
-.masthead{
+.masthead {
     flex: 0 0 auto;
 }
 
-mat-sidenav{
+mat-sidenav {
     top: 64px !important;
 }
 
-.example-container{
+.example-container {
     height: 100%;
     overflow-y: hidden;
 }
 
-.content-main{
+.content-main {
     padding: 24px;
     // height: 100%;
     flex: 1 1 auto;
 }
+
+
+
+.container {
+    width: 46px;
+    height: 46px;
+    box-sizing: border-box;
+    padding: 12px;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  .sun {
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.6) rotate(0deg);
+    transition: transform 0.3s ease-in, opacity 0.2s ease-in 0.1s;
+    
+  /*  white transparent for Safari  */
+    background: radial-gradient(circle, rgba(0, 0, 0, 0) 50%, #f0f0f0 50%);
+  }
+  
+  .sun:before {
+    content: "";
+    position: absolute;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, #f0f0f0 30%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0) 50%, #f0f0f0 50%);
+    transform: rotate(45deg);
+  }
+  
+  .sun.visible {
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+    transition: transform 0.3s ease-in, opacity 0.2s ease-in 0.1s;
+  }
+      
+  .moon {
+    width: 50%;
+    height: 50%;
+    pointer-events: none;
+    position: absolute;
+    left: 12.5%;
+    top: 18.75%;
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 50%;
+    box-shadow: 9px 3px 0px 0px #f0f0f0;
+    opacity: 0;
+    transform: scale(0.3) rotate(65deg);
+    transition: transform 0.3s ease-in, opacity 0.2s ease-in 0.1s;
+  }
+  
+  .moon.visible {
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    transition: transform 0.3s ease-in, opacity 0.2s ease-in 0.1s;
+  }
+  
+  .star {
+    position: absolute;
+    top: 25%;
+    left: 5%;
+    display: block;
+    width: 0px;
+    height: 0px;
+    border-right: 7px solid rgba(0, 0, 0, 0);
+    border-bottom: 5px solid #f0f0f0;
+    border-left: 7px solid rgba(0, 0, 0, 0);
+    transform: scale(0.55) rotate(35deg);  
+    opacity: 0;
+    transition: all 0.2s ease-in 0.4s;
+  }
+  
+  .star:before {
+    border-bottom: 5px solid #f0f0f0;
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    position: absolute;
+    height: 0;
+    width: 0;
+    top: -3px;
+    left: -5px;
+    display: block;
+    content: '';
+    transform: rotate(-35deg);
+  }
+  
+  .star:after {
+    position: absolute;
+    display: block;
+    color: red;
+    top: 0px;
+    left: -7px;
+    width: 0px;
+    height: 0px;
+    border-right: 7px solid rgba(0, 0, 0, 0);
+    border-bottom: 5px solid #f0f0f0;
+    border-left: 7px solid rgba(0, 0, 0, 0);
+    transform: rotate(-70deg);
+    content: '';
+  }
+  
+  .moon.visible .star {
+    opacity: .8;
+  /*   transform: rotate(35deg); */
+  }
+  
+  .star.small {
+    transform: scale(0.35) rotate(35deg);
+    position: relative;
+    top: 50%;
+    left: 37.5%;
+    opacity: 0;
+    transition: all 0.2s ease-in 0.45s;
+  }
+  
+  .moon.visible .star.small {
+    opacity: .7;
+    transform: scale(0.45) rotate(35deg);
+  }
+
+
+
+// label, .toggle {
+//     height: 2.8rem;
+//     border-radius: 100px;
+// }
+
+// label {
+//     width: 100%;
+//     background-color: rgba(0, 0, 0, .1);
+//     border-radius: 100px;
+//     position: relative;
+//     margin: 1.8rem 0 4rem 0;
+//     cursor: pointer;
+// }
+
+// .toggle {
+//     position: absolute;
+//     width: 50%;
+//     background-color: #fff;
+//     box-shadow: 0 2px 15px rgba(0, 0, 0, .15);
+//     transition: transform .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+// }
+
+// .names {
+//     font-size: 90%;
+//     font-weight: bolder;
+//     width: 65%;
+//     margin-left: 17.5%;
+//     margin-top: .5%;
+//     position: absolute;
+//     display: flex;
+//     justify-content: space-between;
+//     user-select: none;
+// }
+
+// .dark {
+//     opacity: .5;
+// }
+
+// [type="checkbox"] {
+//     display: none;
+// }
+
+// /* Toggle */
+// [type="checkbox"]:checked+.app .toggle {
+//     transform: translateX(100%);
+//     background-color: #34323D;
+// }
+
+// [type="checkbox"]:checked+.app .dark {
+//     opacity: 1;
+// }
+
+// [type="checkbox"]:checked+.app .light {
+//     opacity: .5;
+// }

@@ -1,9 +1,22 @@
 <div class="main">
-  <mat-toolbar class="masthead">
+  <mat-toolbar class="masthead" color="primary">
     <button mat-icon-button class="example-icon" aria-label="navigation" (click)="sidenav.toggle()">
       <mat-icon>menu</mat-icon>
     </button>
     <span style="flex: 1 1 auto; text-align: center;">Souptik Banerjee Developer Blog</span>
+    <!-- <app-theme-menu 
+      [options]="options"
+      [theme]="selectedTheme"
+      (themeChange)="themeChangeHandler($event)">
+    </app-theme-menu> -->
+    <button class="container" aria-label="Toggle color mode" title="Toggle color mode">
+      <div class="sun visible">
+      </div>
+      <div class="moon">
+        <div class="star"></div>
+        <div class="star small"></div>
+      </div>
+      </button>
   </mat-toolbar>
 
   <mat-sidenav-container class="example-container">
@@ -14,6 +27,14 @@
 
     <mat-sidenav-content>
       <div class="content-main">
+        <!-- <input type="checkbox" id="switch">
+        <label for="switch">
+          <div class="toggle"></div>
+          <div class="names">
+            <p class="light">Light</p>
+            <p class="dark">Dark</p>
+          </div>
+        </label> -->
         <router-outlet></router-outlet>
       </div>
     </mat-sidenav-content>

@@ -1,0 +1,19 @@
+.page-container{
+    padding: 0 10vw;
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.center{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2vh;
+}
+
+.problem-images{
+    max-width: 600px;
+    max-height: 400px;
+    margin-top: 2vh;
+}

@@ -1,0 +1,568 @@
+<div class="page-container">
+    <h1>Knowledge-Based Agent</h1>
+    <h1>Open CV based shape detection to solve Raven's Progressive Matrices</h1>
+    
+    <h2>1 Overview</h2>
+    
+    <p>
+        In this project I have built an AI agent that is able to pass a human 
+        intelligence test with good accuracy. To implement the agent I built a 
+        knowledge-based agent that uses a rule-based engine to build a semantic 
+        model of the problem and then go about solving it. 
+    </p>
+    
+    <p>
+        For all problems, the agent is given images that represent the 
+        problem in .png format. An example of a full problem is shown below; 
+        the agent would be given separate files representing the contents of 
+        squares A, B, C, 1, 2, 3, 4, 5, and 6.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/2x2BasicProblem12-e1534532109528.png" alt="Sample Basic 2x2 Problem" class="problem-images">
+        <img src="assets/rpm/3x3BasicProblems22-1080x864.png" alt="Sample Basic 3x3 Problem" class="problem-images">
+    </div>
+    
+    <p>
+        In this project, I will design an agent that will address RPM-inspired 
+        problems such as the ones above. The goal of this project is to authentically 
+        experience the overall goals of knowledge-based AI: to design an agent 
+        with human-like, human-level intelligence; and to test that agent against a 
+        set of authentic problems.
+    </p>
+    
+    <h2>2 Personal Reasoning Technique</h2>
+    
+    <div class="center">
+        <img src="assets/rpm/2x2BasicProblem06.png" alt="Sample Basic 2x2 Problem" class="problem-images">
+    </div>
+    
+    <p>
+        In the example above we can see that the lower right corner of the shape gets filled. 
+        This is an example of a shape change (or a color fill change). When we compare the 
+        images column-wise, we can see a 90&deg; right rotation. To get my answer, first I try to 
+        apply both transformations and see which one is applicable. Based on trial and error 
+        I find that the rotation transformation is more ap-plicable to the transition and apply 
+        the same transition to image B and get the answer 5.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/3x3BasicProblemsC08.png" alt="Sample Basic 3x3 Problem" class="problem-images">
+    </div>
+    
+    <p>
+        While looking at the first row I can see that shapes are being added to the right of 
+        the image. However, in the second row, I can see that not only shapes are being added 
+        to the right but also some form of XOR operation taking place. As a human, it is easy 
+        for me to identify both kinds of operations taking place simultaneously. I then apply 
+        both transformations on the last row and figure out that the left set of boxes will get 
+        hollowed out because of the next set of boxes being added on top of the existing ones.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/3x3BasicProblemsC09.png" alt="Sample Basic 3x3 Problem" class="problem-images">
+    </div>
+    
+    <p>
+        While looking at the above example I was very confused at first. Based on the 2nd image 
+        I thought that each triangle was replicated below itself and its size reduced. Then 
+        again split and placed opposite each other. But the second row of images does not 
+        conform to the pattern. After a while, I realized that the center image is an overlap 
+        of the 2 shapes in the first image. Also, unlike the previous 2 examples, there is no 
+        direct relation between the images along a column.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/3x3BasicProblemsE09.png" alt="Sample Basic 3x3 Problem" class="problem-images">
+    </div>
+    
+    <p>
+        This example is purely shape transitions and requires the ability to detect shapes. 
+        As a human, it is very easy to do as it is something we learn at a very young age. 
+        This also requires parallelly tracking the shape transitions across the top and bottom 
+        shapes in the images.
+    </p>
+
+    <h2>Agent approach 1</h2>
+
+    <p>
+        In the first milestone, I have implemented simple transforms such as horizontal 
+        and vertical mirror reflections. My agent first takes image A and then applies 
+        5 transforms to it: horizontal reflection, vertical reflection, 90&deg; rotation, 
+        180&deg; rotation, and 270&deg; rotation. I then compare the result of each of 
+        these transformations against images B and C. During comparison I calculate a 
+        similarity score and store the results in the format: 
+    </p>
+    <ul>
+        <li>Transformation: (rotation, reflection, etc.)</li>
+        <li>Transformation type: (row-wise/column-wise) </li>
+        <li>Transformation score (RMS error between the 2 image matrices)</li>
+    </ul>
+    <pre>
+        <code class="language-python" ng-non-bindable>
+possible_transforms = [Image.FLIP_LEFT_RIGHT, Image.FLIP_TOP_BOTTOM, Image.ROTATE_90, Image.ROTATE_180, Image.ROTATE_270]
+for transform in possible_transforms:
+    obj = problem_images['A'].image.transpose(transform)
+    option1 = ImageObject().load_image(obj)
+    transform_score = self.compare_images(option1.pixel_data, problem_images['B'].pixel_data)
+    if transform_score &gt; 0.85:
+        all_transforms.append(&#123;
+            TRANSFORM: transform,
+            TRANSFORM_SCORE: transform_score,
+            TRANSFORM_TYPE: TRANSFORM_TYPE_ROW
+        &#125;)
+    if transform_score &gt; best_row_transform_score:
+        best_row_transform_score = transform_score
+        best_row_transform = transform
+        best_transforms.append(&#123;
+            TRANSFORM: best_row_transform,
+            TRANSFORM_SCORE: best_row_transform_score,
+            TRANSFORM_TYPE: TRANSFORM_TYPE_ROW
+        &#125;)
+    transform_score = self.compare_images(option1.pixel_data, problem_images['C'].pixel_data)
+    if transform_score &gt; 0.85:
+        all_transforms.append(&#123;
+            TRANSFORM: transform,
+            TRANSFORM_SCORE: transform_score,
+            TRANSFORM_TYPE: TRANSFORM_TYPE_COLUMN
+        &#125;)
+    if transform_score &gt; best_column_transform_score:
+        best_column_transform_score = transform_score
+        best_column_transform = transform
+        best_transforms.append(&#123;
+            TRANSFORM: best_column_transform,
+            TRANSFORM_SCORE: best_column_transform_score,
+            TRANSFORM_TYPE: TRANSFORM_TYPE_COLUMN
+        &#125;)
+        </code>
+    </pre>
+    <p>
+        After running through all the transformations, I rank those results based on 
+        the similarity score and pick only the transformations that generate a similarity 
+        score above 80%. I then iterate over this filtered and sorted list and use each 
+        transformation to generate a potential answer by running the transformation on 
+        either image B or C based on whether it was a column-wise or a row-wise 
+        transformation respectively. I then compare each potential answer against the 
+        available answers, generate a similarity score, and keep track of the most 
+        confident answer. After I have run through all possible good transformations 
+        and generated answers using them, I return the answer that the agent is most 
+        confident in. 
+    </p>
+    <pre>
+        <code class="language-python" ng-non-bindable>
+for potential_transform in best_transforms:
+    answer_image = None
+    if potential_transform[TRANSFORM_TYPE] == TRANSFORM_TYPE_ROW:
+        answer_image = problem_images['C'].image.transpose(potential_transform[TRANSFORM])
+    elif potential_transform[TRANSFORM_TYPE] == TRANSFORM_TYPE_COLUMN:
+        answer_image = problem_images['B'].image.transpose(potential_transform[TRANSFORM])
+    
+    answer_image = ImageObject().load_image(answer_image)
+
+    best_answer = None
+    best_answer_score = -100000
+    for ans in range(1,7):
+        transform_score = self.compare_images(answer_image.pixel_data, problem_images[f"ans_&#123;ans&#125;"].pixel_data)
+        if transform_score &gt; best_answer_score:
+            best_answer = ans
+            best_answer_score = transform_score
+
+    info_log(f"Best answer is &#123;best_answer&#125; with confidence &#123;best_answer_score&#125; for transform &#123;potential_transform&#125;")
+    if best_answer_score &gt; best_final_answer_score:
+        best_final_answer_score = best_answer_score
+        best_final_answer = best_answer
+
+info_log(f"Best overall answer &#123;best_final_answer&#125; with confidence &#123;best_final_answer_score&#125;")
+        </code>
+    </pre>
+    <p>
+        In case the list of potential best transformations is empty, I do 
+        an XOR between images A and B and store the resultant image. I then iterate over 
+        all the answers and perform an XOR operation on image C and the answer image. I 
+        then compare the 2 resultant images and keep track of the best answer based on 
+        this comparison result and then finally return this best answer.
+    </p>
+    <pre>
+        <code class="language-python" ng-non-bindable>
+best_answer = None
+best_answer_score = -100000
+xor_a_b = ImageObject().load_image(ImageChops.logical_xor(problem_images['A'].image.convert("1"), problem_images['B'].image.convert("1")))
+for ans in range(1,7):
+    xor_c_ans = ImageObject().load_image(ImageChops.logical_xor(problem_images['C'].image.convert("1"), problem_images[f"ans_&#123;ans&#125;"].image.convert("1")))
+    transform_score = self.compare_images(xor_a_b.pixel_data, xor_c_ans.pixel_data)
+    if transform_score &gt; best_answer_score:
+        best_answer = ans
+        best_answer_score = transform_score
+
+info_log(f"Best XOR answer is &#123;best_answer&#125; with confidence &#123;best_answer_score&#125;")
+
+if best_answer_score &gt; best_final_answer_score:
+    best_final_answer_score = best_answer_score
+    best_final_answer = best_answer
+        </code>
+    </pre>
+
+    <h2>Agent approach 2</h2>
+
+    <p>
+        My agent reads every image and stores 2 versions of it in memory. One version 
+        is read by the Pillow library, and another is read by the OpenCV library. 
+        This allows me to use various image processing techniques on the same image. 
+        After loading the images, I iterate over them to find the number of shapes in 
+        each. To do this, I use the “findContours” function from the OpenCV library 
+        which also returns the hierarchy of the contours. I then count only the shapes 
+        that are at hierarchy 1, this is because OpenCV reads the white areas as contours 
+        too but counts them as nested shapes. This allows me to identify only the dark 
+        shapes in the image. I had to read the OpenCV documentation very 
+        carefully and do lots of experiments to get the contour detection algorithm to 
+        correctly find the number of distinct shapes. 
+    </p>
+    <pre>
+        <code class="language-python" ng-non-bindable>
+def find_countours(self):
+    ret, thresh = cv2.threshold(self.image, 127, 255, cv2.THRESH_BINARY_INV)
+    self.contours, self.hierarchy = cv2.findContours(thresh, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    self.num_contours = len(self.contours)
+    if self.hierarchy is not None and len(self.hierarchy) &gt; 0:
+        for idx, element in enumerate(self.hierarchy[0]):
+            if [[0,0]] not in self.contours[idx] and element[3] == -1:
+                self.valid_contours.append(self.contours[idx])
+                self.num_shapes = self.num_shapes + 1        
+    return self
+
+def analyze_shapes(self):
+    filename = self.filename.split('\\')
+    filename = filename[len(filename) - 1].split('.')[0]
+    for cnt in self.valid_contours:
+        rect = cv2.minAreaRect(cnt)
+        box = cv2.boxPoints(rect)
+        approx = len(cv2.approxPolyDP(cnt, .02 * cv2.arcLength(cnt, True), True))
+
+        area = cv2.contourArea(cnt)
+        (cx, cy), radius = cv2.minEnclosingCircle(cnt)
+        circleArea = radius * radius * math.pi
+        area_ratio = area / circleArea
+        if area_ratio > 0.91 and area_ratio &lt; 1.1:
+            approx = 100
+
+        center_x = int(rect[0][0])
+        center_y = int(rect[0][1])
+        half_width = int(rect[1][0]/2)
+        half_height = int(rect[1][1]/2)
+        shape_area = self.image[center_y-int(half_height):center_y+int(half_height), center_x-int(half_width):center_x+int(half_width)]
+        box = np.int0(box)
+        filled = np.mean(shape_area) &lt; 75.0 if len(shape_area) > 0 else False
+        self.shape_list.append(ShapeProperties(rect, approx, box, ((cx, cy), radius), filename, shape_area, filled))
+        </code>
+    </pre>
+    
+    <p>This approach still has some issues:
+        The below image shows that when shapes superimpose each other it is determined as 
+        a single shape.</p>
+
+    <div class="center">
+        <img src="assets/rpm/contour detection issue.png" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        My agent then tries to find some pattern in the changing number of shapes. 
+        If any pattern is found, then I calculate the expected number of shapes in 
+        the answer image and then look for an image with the same number of shapes. 
+        If I find only 1 image that matches the criteria, I return that image as the 
+        answer. While iterating over the answer images I also keep in memory the difference 
+        in the dark pixel ratio between each image and image H. If multiple or no images 
+        are found having the expected number of shapes, I then create a list where each 
+        element is the absolute difference between the dark pixel ratio difference between 
+        answer image and H and that between G and H (Pixel ratio difference(Answer 
+        Image X, Image H) - Pixel ratio difference(Image H, Image G)). I then take the 
+        image having the least such difference. This allows me to find the image which 
+        keeps the changing number of pixels the same across the images in the last row.
+    </p>
+
+    <pre>
+        <code class="language-python" ng-non-bindable>
+GH_pixel_diff = self.get_pixel_diff(problem_images['G'].pi_obj.image, problem_images['H'].pi_obj.image)
+
+expected_num_shapes = -1
+row1_total_shapes = sum([problem_images['A'].cv_obj.num_shapes, problem_images['B'].cv_obj.num_shapes, problem_images['C'].cv_obj.num_shapes])
+row2_total_shapes = sum([problem_images['D'].cv_obj.num_shapes, problem_images['E'].cv_obj.num_shapes, problem_images['F'].cv_obj.num_shapes])
+
+row1_num_shapes_same = problem_images['A'].cv_obj.num_shapes == problem_images['B'].cv_obj.num_shapes == problem_images['C'].cv_obj.num_shapes
+row2_num_shapes_same = problem_images['D'].cv_obj.num_shapes == problem_images['E'].cv_obj.num_shapes == problem_images['F'].cv_obj.num_shapes
+
+row1_AB_num_shape_change = problem_images['A'].cv_obj.num_shapes - problem_images['B'].cv_obj.num_shapes
+row1_BC_num_shape_change = problem_images['B'].cv_obj.num_shapes - problem_images['C'].cv_obj.num_shapes
+
+row1_DE_num_shape_change = problem_images['D'].cv_obj.num_shapes - problem_images['E'].cv_obj.num_shapes
+row1_EF_num_shape_change = problem_images['E'].cv_obj.num_shapes - problem_images['F'].cv_obj.num_shapes
+
+if row1_total_shapes == row2_total_shapes:
+    debug_log("Same total number of shapes in rows 1 and 2")
+    expected_num_shapes = row1_total_shapes - sum([problem_images['G'].cv_obj.num_shapes, problem_images['H'].cv_obj.num_shapes])
+elif row1_num_shapes_same and row2_num_shapes_same:
+    debug_log("Same number of shapes in each row")
+    expected_num_shapes = problem_images['G'].cv_obj.num_shapes
+elif (row1_AB_num_shape_change == row1_BC_num_shape_change) and (row1_DE_num_shape_change == row1_EF_num_shape_change):
+    debug_log(f"Shape change pattern found. row1 change: &#123;row1_AB_num_shape_change&#125;  :::  row2 change: &#123;row1_DE_num_shape_change&#125;")
+    expected_num_shapes = problem_images['H'].cv_obj.num_shapes - (problem_images['G'].cv_obj.num_shapes - problem_images['H'].cv_obj.num_shapes)
+debug_log(f"Expected number of shapes: &#123;expected_num_shapes&#125;")
+
+answer_H_diff =[]
+candidate_options = []
+
+for ans in range(1,9):
+    answer_H_diff.append(self.get_pixel_diff(problem_images['H'].pi_obj.image, problem_images[f"ans_&#123;ans&#125;"].pi_obj.image))
+    if problem_images[f"ans_&#123;ans&#125;"].cv_obj.num_shapes == expected_num_shapes:
+        candidate_options.append(ans)
+
+
+if len(candidate_options) == 1:
+    info_log(f"Found answer: &#123;candidate_options[0]&#125;")
+    return candidate_options[0]
+
+closest_answer = np.argmin(abs(np.array(answer_H_diff)-GH_pixel_diff)) + 1
+info_log(f"Closest answer: &#123;closest_answer&#125;")
+
+return closest_answer
+        </code>
+    </pre>
+
+    <h2>Agent approach 3</h2>
+
+    <p>
+        In this stage of the approach, using the same “findContours” function from the 
+        OpenCV library I iterate over the images to find the number of shapes in each image.
+        I then iterate over these valid contours and get the number of sides in each shape, 
+        its height, width, and the center point of the shape. I found that detecting the 
+        number of sides was hard, especially for circles. To get over this issue I first 
+        use the function “approxPolyDP” which better approximates the number of sides for 
+        a contour. However, for a circle, this function returns the number of sides as 8 
+        which is the same as an octagon. To differentiate between octagons and circles I 
+        perform the following operation: First, I find the area of the contour using the 
+        “contourArea” function, next I find the minimum enclosing circle of the contour 
+        using the “minEnclosingCircle” function and calculate the area of this circle. 
+        Then I compare these 2 areas to see if they are close to equal. If they are, then 
+        I mark the shape as a circle by saving the number of sides as 100. For each shape 
+        object, I also stored in which image they were found (A, B, C, etc.). I also 
+        determine if a shape is filled or not. To determine this, I take the cropped pixels 
+        of the shape and determine the mean pixel value, if it is less than 75 then it is a 
+        filled shape because black is pixel value 0 and white is pixel value 255. I then create 
+        a list of unique shapes across all 8 images. The comparison criteria of the shapes 
+        are defined as follows: the total area of the 2 shapes should be almost equal, the 
+        number of sides must be exactly equal, and the shapes should not be part of the 
+        same image (this allows 2 circles in the same image to be considered unique 
+        shapes). Using this unique list of shapes, I keep track of how many times each 
+        image is present in each row and column. Then for each image, I look for patterns 
+        in the number of occurrences across rows and columns. Using these patterns, I 
+        predict the expected number of occurrences of each of these shapes. If my 
+        prediction across rows and columns matches, then I add that shape to the predicted 
+        answer image's shape list. Finally, I iterate over all the answer images and 
+        compare the shapes in that answer against the expected shapes created above. 
+        If the shapes in the answer match exactly with the expected shapes, I select 
+        that answer as the best answer and return it.
+    </p>
+
+    <pre>
+        <code class="language-python" ng-non-bindable>
+for image in problem_images:
+    problem_images[image].cv_obj.find_countours()
+    problem_images[image].cv_obj.analyze_shapes()
+    if "ans" not in image:
+        for shape in problem_images[image].cv_obj.shape_list:
+            if shape not in unique_image_list:
+                unique_image_list.append(shape)
+image_index_map = &#123;
+    '00': 'A',
+    '01': 'B',
+    '02': 'C',
+    '10': 'D',
+    '11': 'E',
+    '12': 'F',
+    '20': 'G',
+    '21': 'H'
+&#125;
+
+for image in unique_image_list:
+
+unique_image_id_map = &#123;&#125;
+shape_presence_matrix = [[[], [], []], [[], [], []], [[], [], []]]
+
+for unique_image in unique_image_list:
+    image_unique_id = UUID()
+    unique_image_id_map[image_unique_id] = &#123;
+        'image': unique_image,
+        'row0_cnt': 0,
+        'row1_cnt': 0,
+        'row2_cnt': 0,
+        'row2_expected': 0,
+        'col0_cnt': 0,
+        'col1_cnt': 0,
+        'col2_cnt': 0,
+        'col2_expected': 0,
+        'final_expected': 0
+    &#125;
+    for row_idx in range(3):
+        for col_idx in range(3):
+            if not (row_idx == 2 and col_idx == 2):
+                if unique_image in problem_images[image_index_map[f"&#123;row_idx&#125;&#123;col_idx&#125;"]].cv_obj.shape_list:
+                    shape_presence_matrix[row_idx][col_idx].append(image_unique_id)
+                    unique_image_id_map[image_unique_id][f"row&#123;row_idx&#125;_cnt"] += 1
+                    unique_image_id_map[image_unique_id][f"col&#123;col_idx&#125;_cnt"] += 1
+
+for row in shape_presence_matrix:
+
+for image in unique_image_id_map:
+
+for unique_image in unique_image_id_map:
+    image = unique_image_id_map[unique_image]
+    if image['row0_cnt'] == image['row1_cnt'] and image['row0_cnt'] != 0:
+        if image['row0_cnt'] != image['row2_cnt']:
+            image['row2_expected'] = image['row1_cnt'] - image['row2_cnt']
+    elif image['row0_cnt'] == image['row1_cnt'] and image['row0_cnt'] == 0:
+        image['row2_expected'] = 1
+
+    if image['col0_cnt'] == image['col1_cnt'] and image['col0_cnt'] != 0:
+        if image['col0_cnt'] != image['col2_cnt']:
+            image['col2_expected'] = image['col1_cnt'] - image['col2_cnt']
+    elif image['col0_cnt'] == image['col1_cnt'] and image['col0_cnt'] == 0:
+        image['col2_expected'] = 1
+
+    if image['row2_expected'] == image['col2_expected']:
+        image['final_expected'] = image['row2_expected']
+
+
+expected_images = [unique_image_id_map[image]['image'] for image in unique_image_id_map if unique_image_id_map[image]['final_expected'] != 0]
+for image in expected_images:
+best_match = -1
+
+for ans in range(1,9):
+    matched_shapes = 0
+    for shape in problem_images[f"ans_&#123;ans&#125;"].cv_obj.shape_list:
+        if shape in expected_images:
+            matched_shapes += 1
+    if matched_shapes == len(problem_images[f"ans_&#123;ans&#125;"].cv_obj.shape_list) and len(expected_images) == matched_shapes:
+        best_match = ans
+        </code>
+    </pre>
+
+    <h2>Agent approach 4</h2>
+
+    <p>
+        I used another approach for a different set of problems. I first perform 3 operations
+        : XOR, OR, and AND on the 3 sets of images, AB, DE, and GH. I then compare the 
+        resultant image of these operations against the 3rd image in the row i.e., 
+        XOR(A, B) against C, OR(D, E) against F, etc. I then choose the transformation 
+        that generates the closest resultant image in each row. If it is the same 
+        transformation across both rows, I take the resultant image of the same 
+        transformation on im-ages G and H as the expected answer. I then compare the 
+        expected answer against all available answers using root-mean-square difference 
+        and pick the best answer.
+    </p>
+
+    <h2>Demonstration of logic for passed tests</h2>
+    
+    <div class="center">
+        <img src="assets/rpm/logic demo 1.png" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        Taking the example of B-07 and B-06 above, I can demonstrate the transformation 
+        logic I have used. In B-07 the agent is able to find that Image A was reflected 
+        horizontally to generate image B and hence my agent reflects image C horizontally 
+        to generate image 6. For B-06, image A has been rotated 90° clockwise to generate 
+        image C and hence my agent rotates image B 90° to generate answer image 5.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/logic demo 2.png" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        In example C-05 above, we can see the number of shapes changing between the images 
+        across the row. The agent determines that 1 shape is getting added across both 
+        rows and columns. Using this pattern my agent determines that the number of shapes 
+        in the last column is supposed to be 6. It then looks through the answers and finds 
+        that answer option number 3 has 6 shapes in it and hence selects it as the final 
+        answer.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/logic demo 3.jpg" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        In the example D-04 above, we can see that the outer shapes remain constant along 
+        the columns and the inner shapes remain constant across the row. My agent first 
+        creates a list of unique shapes which here is a cross, a star, a heart, a circle, 
+        a diamond, and a square. My agent figures out that the circle, diamond, and square 
+        occur once in each row and thrice in each column. Since it finds that the square 
+        has appeared only twice along the last column and has not appeared in the last 
+        row, it determines that it should appear once in the last column and once in the 
+        last row. Since the expected number of occurrences is the same for the row and 
+        column it stores that the final answer should have that square. Next, it realizes 
+        that the heart does not appear even once in the other 2 rows which means it should 
+        appear at least once in the last row (because either it should appear thrice and 
+        has appeared only twice or appeared 0 times and should appear once). So now the 
+        agent has determined that the answer image should contain one heart and one 
+        square. Scanning through the answers the agent finds that the first option 
+        contains both the expected shapes exactly, so I return this as my final answer.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/logic demo 4.jpg" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        For problem E-05, my agent performs an XOR operation on images A and B and finds 
+        that the result is the same as image C. Similarly, XOR on D and E results in F. 
+        This allows the agent to decide that XOR on the first 2 images resulting in the 
+        3rd image is the pattern. Hence the agent performs an XOR on G and H and compares 
+        that result against the answer options and finds that the closest match is option 
+        5 and returns it as the final answer.
+    </p>
+
+    <h2>Demonstration of logic for failed tests</h2>
+    
+    <div class="center">
+        <img src="assets/rpm/logic fail demo 1.png" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        I have only implemented transformation checks and not shape fill pattern checks 
+        hence I am failing this test case. I have not added this particular check to 
+        my set of logic.
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/logic fail demo 2.png" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        For set D, my agent performs well on problems where the pattern is based on the 
+        presence of certain shapes across images in rows and columns. The test D-11 is 
+        one where the shape fill pattern changes. Here the problem can be solved using 
+        the XOR pattern. But since the shape is the same across all images (a star) and 
+        most of the answers contain the same shape, my agent gets confused and returns 
+        one of the answer images that contains the star as the answer. The test D-12 is 
+        one where the combinations of shapes changes. My agent checks for similarity in 
+        the number of shapes across rows. But the issue with my agent is that it does not 
+        count the occurrences of shape in each image. It instead finds that there are 3 
+        squares in the first row, the same 3 squares in the 2nd row, and the same 3 
+        squares in the last row. Similarly, it finds 4 triangles in the first row, and 
+        the same 4 triangles in the 2nd row and hence it expects the same 4 triangles 
+        in the 3rd row. Based on this logic it selects answe option number 4
+    </p>
+    
+    <div class="center">
+        <img src="assets/rpm/logic fail demo 3.png" alt="contour detection issue" class="problem-images">
+    </div>
+
+    <p>
+        For set E, the problem E04 fails because the shapes that are XORed are not exactly 
+        as they are found in the image. Here, image B is offset to the left first and then 
+        XORed with image A and then the resultant image is centered. Since I have not 
+        implemented this capability, my agent fails the case.
+    </p>
+
+
+</div>

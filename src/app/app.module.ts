@@ -9,12 +9,18 @@ import { MaterialExampleModule } from './material.module';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { QlearnerBasicComponent } from './qlearner-basic/qlearner-basic.component';
+import { RpmComponent } from './rpm/rpm.component';
+import { ThemeMenuComponent } from './theme-menu/theme-menu.component';
+import { StyleManagerService } from './service/style-manager.service';
+import { ThemeService } from './service/theme.service';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomepageComponent,
-    QlearnerBasicComponent
+    QlearnerBasicComponent,
+    RpmComponent,
+    ThemeMenuComponent
   ],
   imports: [
     BrowserModule,
@@ -25,7 +31,7 @@ import { QlearnerBasicComponent } from './qlearner-basic/qlearner-basic.componen
     FormsModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [StyleManagerService, ThemeService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

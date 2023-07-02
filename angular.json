@@ -33,6 +33,7 @@
               "src/assets"
             ],
             "styles": [
+              "src/assets/prebuilt-themes/indigo-pink.css",
               "src/assets/prebuilt-themes/purple-green.css",
               "src/styles.scss"
             ],
