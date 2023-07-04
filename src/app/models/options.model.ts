@@ -1,8 +1,8 @@
 export interface Option {
-    backgroundColor: string;
-    buttonColor: string;
-    headingColor: string;
-    label: string;
-    value: string;
-    theme: string;
-  }
+  backgroundColor: string;
+  buttonColor: string;
+  headingColor: string;
+  label: string;
+  value: string;
+  theme: string;
+}

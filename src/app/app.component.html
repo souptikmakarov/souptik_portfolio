@@ -4,25 +4,24 @@
       <mat-icon>menu</mat-icon>
     </button>
     <span style="flex: 1 1 auto; text-align: center;">Souptik Banerjee Developer Blog</span>
-    <!-- <app-theme-menu 
-      [options]="options"
-      [theme]="selectedTheme"
-      (themeChange)="themeChangeHandler($event)">
-    </app-theme-menu> -->
-    <button class="container" aria-label="Toggle color mode" title="Toggle color mode">
+    <app-theme-menu></app-theme-menu>
+    <!-- <button class="container" aria-label="Toggle color mode" title="Toggle color mode">
       <div class="sun visible">
       </div>
       <div class="moon">
         <div class="star"></div>
         <div class="star small"></div>
       </div>
-      </button>
+    </button> -->
   </mat-toolbar>
 
   <mat-sidenav-container class="example-container">
     <mat-sidenav #sidenav mode="side" [(opened)]="opened" (opened)="events.push('open!')"
-                (closed)="events.push('close!')" fixedInViewport="true">
-      Sidenav content
+      (closed)="events.push('close!')" fixedInViewport="true">
+      <mat-nav-list>
+        <!-- <a mat-list-item href="..." *ngFor="let link of articles" [activated]="link.isActive">{{ link }}</a> -->
+        <a mat-list-item href="javascript:void(0)" *ngFor="let article of articles" (click)="navigate(article.path)">{{ article.text }}</a>
+      </mat-nav-list>
     </mat-sidenav>
 
     <mat-sidenav-content>

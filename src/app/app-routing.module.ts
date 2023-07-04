@@ -7,6 +7,7 @@ import { RpmComponent } from './rpm/rpm.component';
 const routes: Routes = [
   {path: "home", component: HomepageComponent},
   {path: "q-learner", component: QlearnerBasicComponent},
+  {path: "rpm-agent", component: RpmComponent},
   {path: "", component: RpmComponent}
 ];
 
